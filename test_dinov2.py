@@ -1,6 +1,7 @@
 import torch
 from PIL import Image
 from torchvision import datasets, models, transforms
+import numpy as np
 
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import MinMaxScaler
@@ -23,7 +24,7 @@ patch_size = dinov2_vits14.patch_size
 
 # original image of size 1024x1024
 IMG_SIZE = 1024 
-#520//14
+#1024//14 (floor division)
 patch_h  = IMG_SIZE//patch_size
 patch_w  = IMG_SIZE//patch_size
 feat_dim = 384 # vitl14
@@ -34,7 +35,7 @@ pre_process = transforms.Compose([
     transforms.Resize(IMG_SIZE), #just in case 
     transforms.CenterCrop(1008), #72 * batch size
     transforms.ToTensor(),
-    transforms.Normalize(mean=0.5, std=0.2)
+    transforms.Normalize(mean=0.52, std=0.23) # data set specific
 ])
 
 with torch.no_grad():
@@ -44,4 +45,7 @@ with torch.no_grad():
     features = features_dict['x_norm_patchtokens']
     # total_features.append(features)
 
-print(features.shape)
+# print(features)
+# features.to(torch.device('cpu'))
+numpy_feature = features.cpu().detach().numpy()
+np.save("test.npy",numpy_feature)
