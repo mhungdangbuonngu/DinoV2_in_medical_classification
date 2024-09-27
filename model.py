@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch.optim as optim
+from tqdm import tqdm
 
 class ChestXRClassifier(nn.Module):
     def __init__(self):
@@ -20,13 +21,21 @@ class ChestXRClassifier(nn.Module):
         return z
     
 def get_available_device():
-    device = torch.device("cuda")
-    retrun device
+    if torch.cuda.is_available():
+        device = torch.device('cuda')
+    elif torch.backends.mps.is_available():
+        device = torch.device('mps')
+    else:
+        device = torch.device('cpu')
+    return device
 
-def train():
-
+def train(data_loaders, iters=10, learning_rate=0.000001, wsp="$home/classifier_weight.pth"):
+    device = get_available_device()
     model = ChestXRClassifier()
     model.to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.AdamW(model.parameters(), lr=0.0001)
+    optimizer = optim.AdamW(model.parameters(), lr=learning_rate)
+
+    for epoch in range(iters):
+        data_loop = tqdm(data_loaders['train'])
