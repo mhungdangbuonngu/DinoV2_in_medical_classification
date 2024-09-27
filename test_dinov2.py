@@ -33,19 +33,34 @@ img_path = "/mnt/g/Code/Dataset/archive/images_001/images/00000001_000.png"
 
 pre_process = transforms.Compose([
     transforms.Resize(IMG_SIZE), #just in case 
-    transforms.CenterCrop(1008), #72 * batch size
+    transforms.CenterCrop(1008), #72 * patch size
     transforms.ToTensor(),
     transforms.Normalize(mean=0.52, std=0.23) # data set specific
 ])
 
+class DinoVisionTransformerClassifier(nn.Module):
+    def __init__(self):
+        super(DinoVisionTransformerClassifier, self).__init__()
+        self.transformer = dinov2_vits14
+        self.classifier = nn.Sequential(
+            nn.Linear(384, 256),
+            nn.ReLU(),
+            nn.Linear(256, 15)
+        )
+    
+    def forward(self, x):
+        x = self.transformer(x)
+        x = self.transformer.norm(x)
+        # x = self.classifier(x)
+        return x
+    
+tmp_model = DinoVisionTransformerClassifier()
+tmp_model.to(device)
+
 with torch.no_grad():
     img = Image.open(img_path).convert('RGB')
     img_transformed = pre_process(img).to(device)
-    features_dict = dinov2_vits14.forward_features(img_transformed.unsqueeze(0))
-    features = features_dict['x_norm_patchtokens']
-    # total_features.append(features)
+    features = tmp_model.forward(img_transformed.unsqueeze(0))
 
-# print(features)
-# features.to(torch.device('cpu'))
 numpy_feature = features.cpu().detach().numpy()
 np.save("test.npy",numpy_feature)
