@@ -22,11 +22,6 @@ patch_size = dinov2_vits14.patch_size
 
 # original image of size 1024x1024
 IMG_SIZE = 1024 
-#1024//14 (floor division)
-patch_h  = IMG_SIZE//patch_size
-patch_w  = IMG_SIZE//patch_size
-feat_dim = 384 # vitl14
-
 dataset_path = "/mnt/g/Code/Dataset/archive"
 
 pre_process = transforms.Compose([
