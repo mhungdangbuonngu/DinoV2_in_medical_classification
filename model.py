@@ -33,7 +33,7 @@ def train(data_loaders, iters=10, learning_rate=0.000001, wsp="model_eval/classi
     model = ChestXRClassifier()
     model.to(device)
 
-    criterion = nn.CrossEntropyLoss()
+    criterion = nn.BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
     
