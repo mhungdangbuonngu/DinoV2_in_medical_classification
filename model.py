@@ -7,17 +7,15 @@ class ChestXRClassifier(nn.Module):
     def __init__(self):
         super(ChestXRClassifier, self).__init__()
 
-        #layer
-        self.linear_layer1 = nn.Linear(384, 256) # input of size 256
+        #layers
+        self.linear_layer1 = nn.Linear(387, 256) # input of size 256
         self.relu_layer = nn.ReLU()
         self.linear_layer2 = nn.Linear(256, 15)  # output of size 15
-        # self.sigmoid_layer = nn.Sigmoid()
 
     def forward(self, x):
         z = self.linear_layer1(x)
         z = self.relu_layer(z)
         z = self.linear_layer2(z)
-        # z = self.sigmoid_layer(z)
 
         return z
     
@@ -30,7 +28,7 @@ def get_available_device():
         device = torch.device('cpu')
     return device
 
-def train(data_loaders, iters=10, learning_rate=0.000001, wsp="classifier_weight.pth"):
+def train(data_loaders, iters=10, learning_rate=0.000001, wsp="model_eval/classifier_weight.pth"):
     device = get_available_device()
     model = ChestXRClassifier()
     model.to(device)
@@ -38,22 +36,30 @@ def train(data_loaders, iters=10, learning_rate=0.000001, wsp="classifier_weight
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
+    
     for epoch in range(iters):
         loop = tqdm(data_loaders)
+        
+        epochs_loss = []
+        batch_loss = []
+
         for inputs, labels in loop:
             inputs = inputs.to(device)
             labels = labels.to(device)
-            # labels = labels.unsqueeze(0)
-
             
             optimizer.zero_grad()  # Zero the gradients
             outputs = model(inputs).squeeze(1)  # Forward pass
 
             loss = criterion(outputs, labels)  # Compute loss
+            batch_loss.append(loss.item())
             loss.backward()  # Backward pass
             optimizer.step()  # Update weights
             
             loop.set_description(f"Epoch [{epoch}/{iters}]")
             loop.set_postfix(loss=loss.item())
+        
+        epochs_loss.append(loss.item())
 
     torch.save(model.state_dict(), wsp)
+
+    return epochs_loss, batch_loss

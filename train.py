@@ -1,7 +1,7 @@
 from data_loader import ChestXRDataset
 from torch.utils.data import DataLoader
 import model as md
-import torch
+import numpy as np
 
 # train_label_path = "/mnt/g/Code/Dataset/archive/train/class_label"
 # train_data_path = "/mnt/g/Code/Dataset/archive/train/img_feature"
@@ -13,6 +13,9 @@ test_data_path = "/mnt/g/Code/Dataset/archive/test/img_feature"
 test_label_path = "/mnt/g/Code/Dataset/archive/test/class_label"
 test_data = ChestXRDataset(test_data_path, test_label_path)
 
-test_data_loader = DataLoader(test_data, batch_size=32, shuffle=False)
+test_data_loader = DataLoader(test_data, batch_size=32, shuffle=True, num_workers=4)
 
-md.train(test_data_loader)
+epoch_loss , batch_loss = md.train(test_data_loader, iters=5)
+
+np.save("model_eval/epoch_loss",np.array(epoch_loss))
+np.save("model_eval/batch_loss", np.array(batch_loss))
