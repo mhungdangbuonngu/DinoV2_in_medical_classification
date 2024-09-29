@@ -8,14 +8,16 @@ class ChestXRClassifier(nn.Module):
         super(ChestXRClassifier, self).__init__()
 
         #layers
-        self.linear_layer1 = nn.Linear(387, 256) # input of size 256
+        self.linear_layer1 = nn.Linear(387, 256) # input of size 387
         self.relu_layer = nn.ReLU()
         self.linear_layer2 = nn.Linear(256, 15)  # output of size 15
+        # self.sigmoid_layer = nn.Sigmoid()
 
     def forward(self, x):
         z = self.linear_layer1(x)
         z = self.relu_layer(z)
         z = self.linear_layer2(z)
+        # z = self.sigmoid_layer(z)
 
         return z
     
@@ -36,11 +38,11 @@ def train(data_loaders, iters=10, learning_rate=0.000001, wsp="model_eval/classi
     criterion = nn.BCEWithLogitsLoss()
     optimizer = optim.Adam(model.parameters(), lr=learning_rate)
 
-    
+    epochs_loss = {}
+
     for epoch in range(iters):
         loop = tqdm(data_loaders)
         
-        epochs_loss = []
         batch_loss = []
 
         for inputs, labels in loop:
@@ -58,8 +60,8 @@ def train(data_loaders, iters=10, learning_rate=0.000001, wsp="model_eval/classi
             loop.set_description(f"Epoch [{epoch}/{iters}]")
             loop.set_postfix(loss=loss.item())
         
-        epochs_loss.append(loss.item())
+        epochs_loss[epoch] = batch_loss
 
     torch.save(model.state_dict(), wsp)
 
-    return epochs_loss, batch_loss
+    return epochs_loss

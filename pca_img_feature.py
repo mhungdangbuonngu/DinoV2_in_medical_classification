@@ -1,10 +1,9 @@
 import torch
-from sklearn.decomposition import PCA
+import numpy as np
 import os
 from PIL import Image
 from torchvision import transforms
 from model import get_available_device
-import matplotlib.pyplot as plt
 
 device = get_available_device()
 
@@ -41,23 +40,4 @@ with torch.no_grad():
 
 total_features = torch.cat(total_features, dim=0)
 
-# First PCA to Seperate Background
-# sklearn expects 2d array for traning
-total_features = total_features.reshape(4 * patch_h * patch_w, feat_dim) #4(*H*w, 1024)
-total_features = total_features.cpu()
-
-pca = PCA(n_components=3)
-pca.fit(total_features)
-pca_features = pca.transform(total_features)
-
-# visualize PCA components for finding a proper threshold
-# 3 histograms for 3 components
-plt.subplot(2, 2, 1)
-plt.hist(pca_features[:, 0])
-plt.subplot(2, 2, 2)
-plt.hist(pca_features[:, 1])
-plt.subplot(2, 2, 3)
-plt.hist(pca_features[:, 2])
-plt.savefig("pca_images/features_hist.png")
-# plt.show()
-# plt.close()
+np.save("ThaRangNguoiHayNoiHet.npy", total_features.detach().cpu().numpy())
