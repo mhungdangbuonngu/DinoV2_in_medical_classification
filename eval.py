@@ -5,6 +5,8 @@ from model import get_available_device, ChestXRClassifier
 import numpy as np
 from tqdm import tqdm
 
+torch.multiprocessing.set_sharing_strategy('file_system')
+
 device = get_available_device()
 
 def IoU_accuracy(y_true, y_pred):
@@ -58,21 +60,21 @@ def accuracy(model_path, data) -> float:
         input_ = input_.to(device)
         output_ = tmp_model(input_)
 
-        output_ = output_.squeeze(1) 
+        output_ = torch.sigmoid(output_).squeeze(1) 
         omg_predict.append(output_.detach().cpu().numpy())
         omg_truth.append(truth_)
 
     print(f'{len(omg_predict)} - {omg_predict[0].shape}')
     print(f'{len(omg_truth)} - {omg_truth[0].shape}')
 
-    np.save(r"model_eval/omg_pred", np.array(omg_predict))
-    np.save(r"model_eval/omg_truth", np.array(omg_truth))
+    np.save(r"model_eval/omg_pred", np.array(omg_predict[:-1]))
+    np.save(r"model_eval/omg_truth", np.array(omg_truth[:-1]))
 
 if __name__ == "__main__":
-    test_data_path = "/mnt/g/Code/Dataset/archive/test/img_feature"
-    test_label_path = "/mnt/g/Code/Dataset/archive/test/class_label"
+    test_data_path = "/mnt/g/Code/Dataset/archive/train/img_feature"
+    test_label_path = "/mnt/g/Code/Dataset/archive/train/class_label"
     test_data = ChestXRDataset(test_data_path, test_label_path)
 
     test_data_loader = DataLoader(test_data, batch_size=32, shuffle=True, num_workers=4)
 
-    accuracy(r"model_eval/classifier_weight.pth", test_data_loader)
+    accuracy("/mnt/c/Users/trong/Downloads/classifier_weight.pth", test_data_loader)
