@@ -73,5 +73,5 @@ def confusion_matrix(y_true,y_pred):
     plt.title('Confusion Matrix heatmap')
     plt.xlabel('predicted labels')
     plt.ylabel('true labels')
-
-    plt.show()
+    plt.savefig('plot.png')
+    
