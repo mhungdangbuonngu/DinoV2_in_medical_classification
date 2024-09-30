@@ -1,5 +1,6 @@
 import numpy as np
-
+import matplotlib.pyplot as plt
+import seaborn as sns
 def array_to_1(y):
     return [np.argmax(label) for label in y]
 
@@ -59,3 +60,18 @@ def f1_score(y_true, y_pred):
         return 0
     
     return 2 * (prec * rec) / (prec + rec)
+
+def confusion_matrix(y_true,y_pred):
+    y_true=array_to_1(y_true)
+    y_pred=array_to_1(y_pred)
+    labels=[0,1]
+    confusion_matix = np.zeros((len(labels),len(labels)),dtype=int)
+    for true, pred in zip(y_true,y_pred):
+        confusion_matix[true,pred]+=1
+    plt.figure(figsize=(6,5))
+    sns.heatmap(confusion_matix,annot=True,fmt='d',cmap='Blues',xticklabels=['Predicted 0','Predicted 1'],yticklabels=['True 0','True 1'])
+    plt.title('Confusion Matrix heatmap')
+    plt.xlabel('predicted labels')
+    plt.ylabel('true labels')
+
+    plt.show()

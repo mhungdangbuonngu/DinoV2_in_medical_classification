@@ -55,3 +55,5 @@ if __name__ == "__main__":
     print(f"Recall: {acdc.recall(y_truth, y_hat)}")
     print(f"Precision: {acdc.precision(y_truth, y_hat)}")
     print(f"F1 Score: {acdc.f1_score(y_truth, y_hat)}")
+
+    acdc.confusion_matrix(y_truth,y_hat)
