@@ -11,13 +11,13 @@ class ChestXRClassifier(nn.Module):
         self.linear_layer1 = nn.Linear(387, 256) # input of size 387
         self.relu_layer = nn.ReLU()
         self.linear_layer2 = nn.Linear(256, 15)  # output of size 15
-        # self.sigmoid_layer = nn.Sigmoid()
+        self.sigmoid_layer = nn.Sigmoid()
 
     def forward(self, x):
         z = self.linear_layer1(x)
         z = self.relu_layer(z)
         z = self.linear_layer2(z)
-        # z = self.sigmoid_layer(z)
+        z = self.sigmoid_layer(z)
 
         return z
     
@@ -32,6 +32,7 @@ def get_available_device():
 
 def train(data_loaders, iters=10, learning_rate=0.000001, wsp="model_eval/classifier_weight.pth"):
     device = get_available_device()
+    print(f"Using: {device}")
     model = ChestXRClassifier()
     model.to(device)
 

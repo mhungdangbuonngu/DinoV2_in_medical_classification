@@ -51,6 +51,7 @@ def accuracy(model_path, data) -> float:
     tmp_model.eval()
     
     tmp_model.to(device)
+    print(f"using: {device}")
     loop = tqdm(data)
     
     omg_predict = []
@@ -60,7 +61,7 @@ def accuracy(model_path, data) -> float:
         input_ = input_.to(device)
         output_ = tmp_model(input_)
 
-        output_ = torch.sigmoid(output_).squeeze(1) 
+        output_ = output_.squeeze(1) 
         omg_predict.append(output_.detach().cpu().numpy())
         omg_truth.append(truth_)
 
@@ -75,6 +76,6 @@ if __name__ == "__main__":
     test_label_path = "/mnt/g/Code/Dataset/archive/train/class_label"
     test_data = ChestXRDataset(test_data_path, test_label_path)
 
-    test_data_loader = DataLoader(test_data, batch_size=32, shuffle=True, num_workers=4)
+    test_data_loader = DataLoader(test_data, batch_size=32, shuffle=True, num_workers=6)
 
-    accuracy("/mnt/c/Users/trong/Downloads/classifier_weight.pth", test_data_loader)
+    accuracy("model_eval/classifier_weight.pth", test_data_loader)
