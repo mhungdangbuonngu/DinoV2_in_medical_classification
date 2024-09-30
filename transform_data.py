@@ -39,9 +39,23 @@ def load_transform_save(img_path, npy_path):
     numpy_feature = features.cpu().detach().numpy()
     np.save(npy_path, numpy_feature)
      
-
-
 with torch.no_grad():
     #test 
+    npy_data_path = r"npy_data/"
+    img_data_path = r"img_data/"
+
     for train_test in os.listdir(img_data_path):
-        pass
+        train_test_path = os.path.join(img_data_path, train_test) 
+
+        for yes_no in os.listdir(train_test_path):
+            label = np.array([yes_no == "no", yes_no == "yes"]).astype(float)
+            img_folder_path = os.path.join(train_test_path, yes_no)
+
+            for img in os.listdir(img_folder_path):
+                label_npy = f"{npy_data_path}/{train_test}/class_label/{img}.npy" 
+                np.save(label_npy, label)
+
+                img_file_path = os.path.join(img_folder_path, img)
+                feature_npy = f"{npy_data_path}/{train_test}/img_feature/{img}.npy"
+                
+                load_transform_save(img_file_path, feature_npy)
