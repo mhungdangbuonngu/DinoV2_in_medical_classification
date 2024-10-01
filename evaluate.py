@@ -1,18 +1,16 @@
 import torch
 from torch.utils.data import DataLoader
 from data_loader import test_image_datasets
-from model import get_available_device, ChestXRClassifier
+from model import get_available_device, BrainTumorClassifier
 import numpy as np
 from tqdm import tqdm
-import accuracy as acdc
-
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 
 device = get_available_device()
 
 def give_predict(model_path, data, save_to_file=False) -> float:
-    tmp_model = ChestXRClassifier()
+    tmp_model = BrainTumorClassifier()
     tmp_model.load_state_dict(torch.load(model_path, weights_only=True))
     tmp_model.eval()
     
@@ -49,21 +47,3 @@ if __name__ == "__main__":
     }
 
     y_hat , y_truth = give_predict("model_eval/classifier_weight.pth", data_loaders, save_to_file=True)
-
-    # y_hat = y_hat.reshape(32*40,4)
-    # y_truth = y_truth.reshape(32*40,4)
-
-
-    # print(f"Accuracy: {acdc.accuracy(y_truth, y_hat)}")
-    # print(f"Recall: {acdc.recall(y_truth, y_hat)}")
-    # print(f"Precision: {acdc.precision(y_truth, y_hat)}")
-    # print(f"F1 Score: {acdc.f1_score(y_truth, y_hat)}")
-
-    # acdc.confusion_matrix(y_truth,y_hat)
-    # tmp_model = ChestXRClassifier()
-    # tmp_model.load_state_dict(torch.load(r'model_eval/classifier_weight.pth', weights_only=True))
-    # tmp_model.eval()
-
-    # tmp_model.to(device)
-
-    # image_datasets['train']

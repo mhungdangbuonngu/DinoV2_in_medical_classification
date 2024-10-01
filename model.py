@@ -3,12 +3,11 @@ import torch.nn as nn
 import torch.optim as optim
 from tqdm import tqdm
 
-class ChestXRClassifier(nn.Module):
+class BrainTumorClassifier(nn.Module):
     def __init__(self):
-        super(ChestXRClassifier, self).__init__()
+        super(BrainTumorClassifier, self).__init__()
 
         self.transformer = torch.hub.load('facebookresearch/dinov2', 'dinov2_vits14')
-        #layers
         self.classifier = nn.Sequential(
             nn.Linear(384, 256), # input of size 384
             nn.ReLU(),
@@ -35,7 +34,7 @@ def train(data_loaders, iters=10, learning_rate=0.000001, wsp="model_eval/classi
     device = get_available_device()
     print(f"Using: {device}")
 
-    model = ChestXRClassifier()
+    model = BrainTumorClassifier()
     model.to(device)
 
     criterion = nn.CrossEntropyLoss()
