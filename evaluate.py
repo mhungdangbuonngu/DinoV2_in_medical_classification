@@ -1,10 +1,11 @@
 import torch
 from torch.utils.data import DataLoader
-from data_loader import ChestXRDataset
+from data_loader import test_image_datasets
 from model import get_available_device, ChestXRClassifier
 import numpy as np
 from tqdm import tqdm
 import accuracy as acdc
+
 
 torch.multiprocessing.set_sharing_strategy('file_system')
 
@@ -17,18 +18,18 @@ def give_predict(model_path, data, save_to_file=False) -> float:
     
     tmp_model.to(device)
     print(f"using: {device}")
-    loop = tqdm(data)
+    loop = tqdm(data['test'])
     
     omg_predict = []
     omg_truth = []
+    with torch.no_grad():
+        for input_, truth_ in loop:
+            input_ = input_.to(device)
+            output_ = tmp_model(input_).squeeze(1)
 
-    for input_, truth_ in loop:
-        input_ = input_.to(device)
-        output_ = tmp_model(input_)
-
-        output_ = output_.squeeze(1) 
-        omg_predict.append(output_.detach().cpu().numpy())
-        omg_truth.append(truth_)
+            # output_ = output_.squeeze(1) 
+            omg_predict.append(output_.detach().cpu().numpy())
+            omg_truth.append(truth_)
 
     print(f'{len(omg_predict)} - {omg_predict[0].shape}')
     print(f'{len(omg_truth)} - {omg_truth[0].shape}')
@@ -40,20 +41,29 @@ def give_predict(model_path, data, save_to_file=False) -> float:
     return np.array(omg_predict[:-1]), np.array(omg_truth[:-1])
 
 if __name__ == "__main__":
-    test_data_path = r"npy_data/test/img_feature"
-    test_label_path = r"npy_data/test/class_label"
-    test_data = ChestXRDataset(test_data_path, test_label_path)
+    batch_size = 32
+    num_workers = 4
 
-    test_data_loader = DataLoader(test_data, batch_size=8, shuffle=True, num_workers=6)
+    data_loaders = {x: DataLoader(test_image_datasets[x], shuffle=True, batch_size=batch_size, num_workers=4)
+        for x in ['train', 'test']
+    }
 
-    y_hat , y_truth = give_predict("model_eval/classifier_weight.pth", test_data_loader, save_to_file=False)
+    y_hat , y_truth = give_predict("model_eval/classifier_weight.pth", data_loaders, save_to_file=True)
 
-    y_hat = y_hat.reshape(32,2)
-    y_truth = y_truth.reshape(32,2)
+    # y_hat = y_hat.reshape(32*40,4)
+    # y_truth = y_truth.reshape(32*40,4)
 
-    print(f"Accuracy: {acdc.accuracy(y_truth, y_hat)}")
-    print(f"Recall: {acdc.recall(y_truth, y_hat)}")
-    print(f"Precision: {acdc.precision(y_truth, y_hat)}")
-    print(f"F1 Score: {acdc.f1_score(y_truth, y_hat)}")
 
-    acdc.confusion_matrix(y_truth,y_hat)
+    # print(f"Accuracy: {acdc.accuracy(y_truth, y_hat)}")
+    # print(f"Recall: {acdc.recall(y_truth, y_hat)}")
+    # print(f"Precision: {acdc.precision(y_truth, y_hat)}")
+    # print(f"F1 Score: {acdc.f1_score(y_truth, y_hat)}")
+
+    # acdc.confusion_matrix(y_truth,y_hat)
+    # tmp_model = ChestXRClassifier()
+    # tmp_model.load_state_dict(torch.load(r'model_eval/classifier_weight.pth', weights_only=True))
+    # tmp_model.eval()
+
+    # tmp_model.to(device)
+
+    # image_datasets['train']

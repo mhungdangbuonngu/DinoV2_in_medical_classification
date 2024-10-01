@@ -1,16 +1,16 @@
-from data_loader import ChestXRDataset
 from torch.utils.data import DataLoader
 import model as md
-import numpy as np
+from data_loader import train_image_datasets
 import json
 
-train_label_path = r"npy_data/train/class_label"
-train_data_path = r"npy_data/train/img_feature"
-train_data = ChestXRDataset(train_data_path, train_label_path)
+batch_size = 32
+num_workers = 4
 
-train_data_loader = DataLoader(train_data, batch_size=8, shuffle=True, num_workers=4)
+data_loaders = {x: DataLoader(train_image_datasets[x], shuffle=True, batch_size=batch_size, num_workers=4)
+    for x in ['train', 'test']
+}
 
-epoch_loss = md.train(train_data_loader, iters=100)
+epoch_loss = md.train(data_loaders, iters=1)
 
 with open(r"model_eval/overall_loss.json", "w") as f:
     json.dump(epoch_loss, f)

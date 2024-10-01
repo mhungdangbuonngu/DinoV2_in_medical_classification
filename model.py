@@ -7,17 +7,18 @@ class ChestXRClassifier(nn.Module):
     def __init__(self):
         super(ChestXRClassifier, self).__init__()
 
+        self.transformer = torch.hub.load('facebookresearch/dinov2', 'dinov2_vits14')
         #layers
-        self.linear_layer1 = nn.Linear(384, 256) # input of size 384
-        self.relu_layer = nn.ReLU()
-        self.linear_layer2 = nn.Linear(256, 2)  # output of size 2
-        # self.sigmoid_layer = nn.Sigmoid()
+        self.classifier = nn.Sequential(
+            nn.Linear(384, 256), # input of size 384
+            nn.ReLU(),
+            nn.Linear(256, 4)
+            )
 
     def forward(self, x):
-        z = self.linear_layer1(x)
-        z = self.relu_layer(z)
-        z = self.linear_layer2(z)
-        # z = self.sigmoid_layer(z)
+        z = self.transformer(x)
+        z = self.transformer.norm(z)
+        z = self.classifier(z)
 
         return z
     
@@ -33,6 +34,7 @@ def get_available_device():
 def train(data_loaders, iters=10, learning_rate=0.000001, wsp="model_eval/classifier_weight.pth"):
     device = get_available_device()
     print(f"Using: {device}")
+
     model = ChestXRClassifier()
     model.to(device)
 
@@ -42,7 +44,7 @@ def train(data_loaders, iters=10, learning_rate=0.000001, wsp="model_eval/classi
     epochs_loss = {}
 
     for epoch in range(iters):
-        loop = tqdm(data_loaders)
+        loop = tqdm(data_loaders['train'])
         
         batch_loss = []
 
@@ -55,11 +57,16 @@ def train(data_loaders, iters=10, learning_rate=0.000001, wsp="model_eval/classi
 
             loss = criterion(outputs, labels)  # Compute loss
             batch_loss.append(loss.item())
+
+            predictions = outputs.argmax(dim=1, keepdim=True).squeeze()
+            correct = (predictions == labels).sum().item()
+            accuracy = correct / 32
+
             loss.backward()  # Backward pass
             optimizer.step()  # Update weights
             
             loop.set_description(f"Epoch [{epoch}/{iters}]")
-            loop.set_postfix(loss=loss.item())
+            loop.set_postfix(loss=loss.item(), acc=accuracy)
         
         epochs_loss[epoch] = batch_loss
 
